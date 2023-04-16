@@ -1,0 +1,16 @@
+# IDEs
+.project
+.pydevproject
+.idea
+.vscode
+
+# Random files
+*~
+
+virtualenv/
+
+# Python compiled byte code
+*.pyc
+
+# SQLite3 database
+*.sqlite

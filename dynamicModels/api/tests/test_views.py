@@ -22,7 +22,7 @@ class ViewsTests(APITestCase):
 
         url = reverse('api:create_dynamic_model')
 
-        self.client.post(url, self.create_model_data, format='json')
+        self.response = self.client.post(url, self.create_model_data, format='json')
 
         self.dynamic_model = DynamicModel.objects.get(name__iexact=self.create_model_data['model_name'])
         self.model_class = generate_model_class(self.dynamic_model)
@@ -33,6 +33,7 @@ class ViewsTests(APITestCase):
         db_tables = connection.introspection.table_names()
         dynamic_model_name = self.create_model_data['model_name'].lower()
 
+        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
         # Make sure the dynamic model is created in database
         self.assertIn(f'api_{dynamic_model_name}', db_tables)
 
@@ -64,6 +65,7 @@ class ViewsTests(APITestCase):
         model_class = generate_model_class(self.dynamic_model)
         model_class.objects.create(name='mohamed', age=28, has_address=True)
 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Make sure that the new field added is NULL for the old record created before change
         self.assertIsNone(model_class.objects.first().has_address)
         # Make sure that the 'age' field type is changed to string field
@@ -98,36 +100,8 @@ class ViewsTests(APITestCase):
         # Make sure the model is empty before calling the api endpoint
         self.assertEqual(self.model_class.objects.count(), 0)
         response = self.client.post(url, populate_data, format='json')
-        # Make sure the model contains 3 records
-        self.assertEqual(self.model_class.objects.count(), 3)
-    
-    def test_populate_dynamic_model(self):
-        """Ensure records are created in the dynamic model."""
 
-        populate_data = {
-            'rows': [
-                {
-                   'name': 'mohamed',
-                   'age': 26,
-                   'has_car': True 
-                },
-                {
-                   'name': 'Ahmed',
-                   'age': 33,
-                   'has_car': False 
-                },
-                {
-                   'name': 'Asmaa',
-                   'age': 41,
-                   'has_car': True 
-                }
-            ]
-        }
-
-        url = reverse('api:populate_dynamic_model', kwargs={'model_id': self.dynamic_model.id})
-        # Make sure the model is empty before calling the api endpoint
-        self.assertEqual(self.model_class.objects.count(), 0)
-        response = self.client.post(url, populate_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Make sure the model contains 3 records
         self.assertEqual(self.model_class.objects.count(), 3)
     

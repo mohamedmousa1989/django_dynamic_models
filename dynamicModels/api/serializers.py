@@ -1,12 +1,16 @@
 from rest_framework import serializers
-from api.validators import detect_string_special_characters, detect_dictionary_special_characters
+from api.validators import (
+    detect_string_special_characters,
+    detect_dictionary_special_characters,
+    validate_model_fields
+)
 from api.models import DynamicModel, DynamicModelField
 
 
 class CreateDynamicModelSerializer(serializers.Serializer):
 
     model_name = serializers.CharField(validators=[detect_string_special_characters])
-    fields = serializers.DictField(validators=[detect_dictionary_special_characters])
+    fields = serializers.DictField(allow_empty=False, validators=[detect_dictionary_special_characters, validate_model_fields])
 
     def validate(self, data):
         """Validate incoming data."""
@@ -30,7 +34,7 @@ class CreateDynamicModelSerializer(serializers.Serializer):
 
 class UpdateDynamicModelSerializer(serializers.Serializer):
 
-    fields = serializers.DictField(validators=[detect_dictionary_special_characters])
+    fields = serializers.DictField(allow_empty=False, validators=[detect_dictionary_special_characters, validate_model_fields])
 
     def validate(self, data):
         """Validate incoming data."""
@@ -75,8 +79,12 @@ class UpdateDynamicModelSerializer(serializers.Serializer):
 
 
 class PopulateDynamicModelSerializer(serializers.Serializer):
-    
-    rows = serializers.ListField(child=serializers.DictField(validators=[detect_dictionary_special_characters]))
+
+    rows = serializers.ListField(
+        allow_empty=False, child=serializers.DictField(
+            allow_empty=False, validators=[detect_dictionary_special_characters, validate_model_fields]
+        )
+    )
 
     def validate(self, data):
         """Validate incoming data."""

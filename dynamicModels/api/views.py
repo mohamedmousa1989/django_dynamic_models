@@ -6,7 +6,12 @@ from rest_framework.generics import ListAPIView
 from django.apps import apps
 from django.db import models, connection
 
-from api.serializers import CreateDynamicModelSerializer, UpdateDynamicModelSerializer, PopulateDynamicModelSerializer, generate_serializer_fields
+from api.serializers import (
+    CreateDynamicModelSerializer,
+    UpdateDynamicModelSerializer,
+    PopulateDynamicModelSerializer,
+    generate_serializer_fields
+)
 from api.utils import (
     generate_model_class,
     write_fields_changes_in_database,
@@ -117,7 +122,7 @@ class ListDynamicModelRowsView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        if not queryset:
+        if queryset is None:
             return Response({'Error': 'No dynamic model with this ID exists'}, status=status.HTTP_404_NOT_FOUND)
 
         return super().list(request, *args, **kwargs)

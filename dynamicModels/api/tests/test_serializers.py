@@ -62,6 +62,25 @@ class CreateDynamicModelSerializerTests(TestCase):
         with self.assertRaisesMessage(ValidationError, validation_error_message):
             serializer.is_valid(raise_exception=True)
 
+    def test_blank_fields__validation_error(self):
+        """Test that validation error is raised when fields have blank values."""
+
+        data = {
+            'model_name': 'UserName',
+            'fields': {
+                '': 'string', # field name is blank
+                'age': 'number',
+                'has_car': 'boolean'
+            }
+        }
+        DynamicModel.objects.create(name=data['model_name'].lower())
+
+        serializer = CreateDynamicModelSerializer(data=data)
+        validation_error_message = 'Dictionary keys and values should NOT be blank.'
+
+        with self.assertRaisesMessage(ValidationError, validation_error_message):
+            serializer.is_valid(raise_exception=True)
+
     def test_not_allowed_field_types__validation_error(self):
         """Test that validation error is raised when request data contains not allowed field types."""
     
@@ -221,6 +240,25 @@ class PopulateDynamicModelSerializerTests(TestCase):
         with self.assertRaisesMessage(ValidationError, validation_error_message):
             serializer.is_valid(raise_exception=True)
     
+    def test_blank_dictionary_values__validation_error(self):
+        """Test that validation error is raised when there are blank values."""
+
+        data = {
+            'rows': [{
+                'name': '', # this should not be blank
+                'age': 22,
+                'has_car': True
+            }]
+        }
+
+        dynamic_model = DynamicModel.objects.create(name='testmodel')
+
+        serializer = PopulateDynamicModelSerializer(data=data, context={'model_id': dynamic_model.id}) # incorrect model_id
+        validation_error_message = 'Dictionary keys and values should NOT be blank.'
+
+        with self.assertRaisesMessage(ValidationError, validation_error_message):
+            serializer.is_valid(raise_exception=True)
+
     def test_incorrect_field_name__validation_error(self):
         """Test that validation error is raised when data has incorrect field name."""
 
